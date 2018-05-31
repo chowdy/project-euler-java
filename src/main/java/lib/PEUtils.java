@@ -1,14 +1,65 @@
 package lib;
 
+import com.google.common.math.BigIntegerMath;
+
+import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.math.RoundingMode;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import java.util.stream.IntStream;
 
 public class PEUtils {
+
+    static int[] digits1to9 = new int[] { 1,2,3,4,5,6,7,8,9 };
+    static int sumOfDigits = 1+2+3+4+5+6+7+8+9;
+    static int productOfDigits = 1*2*3*4*5*6*7*8*9;
+
+    public static boolean isPandigital(String num) {
+        IntStream digits = num.chars().sorted();
+
+        if (num.length() != 9 || num.contains("0") || digits.sum() != sumOfDigits ||
+                digits.reduce(1, (a,b) -> a * b) != productOfDigits) {
+            return false;
+        }
+
+        return true;
+
+        //return Arrays.equals(digits.sorted().toArray(), allDigits);
+    }
+
+    //public static boolean isPandigital(String num) {
+    //    char[] numCharsSorted = num.toCharArray();
+    //    Arrays.sort(numCharsSorted);
+    //    return Arrays.equals(allDigits, numCharsSorted);
+    //}
+
+    /*
+    public static boolean isPandigital(String num) {
+        if (num.length() != 9) {
+            return false;
+        } else if (num.contains("0")) {
+            return false;
+        }
+
+        boolean[] digits = new boolean[9];
+
+        for (char d : num.toCharArray()) {
+            if (digits[d - 48 - 1] == true) {
+                return false;
+            } else {
+                digits[d - 48 - 1] = true;
+            }
+        }
+        for (boolean d : digits) {
+            if (!d) {
+                return false;
+            }
+        }
+        return true;
+    }
+    */
 
     public static Iterator<BigInteger> fib = new Iterator<BigInteger>() {
 
@@ -34,6 +85,36 @@ public class PEUtils {
         @Override
         public void forEachRemaining(Consumer<? super BigInteger> action) {}
     };
+
+    // From wikipedia:
+    // x is pentagonal if...
+    // (sqrt(24*x + 1) + 1) / 6
+    // ... is a natural number
+    static BigInteger B24 = BigInteger.valueOf(24);
+    static BigInteger B6  = BigInteger.valueOf(6);
+    public static boolean isPentagonal(long x) {
+        try {
+            BigInteger X = BigInteger.valueOf(x);
+
+            BigInteger buf = B24.multiply(X);
+            buf = buf.add(BigInteger.ONE);
+            buf = BigIntegerMath.sqrt(buf, RoundingMode.UNNECESSARY);
+            buf = buf.add(BigInteger.ONE);
+
+            if ((buf.mod(B6)).compareTo(BigInteger.ZERO) == 0) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (ArithmeticException e) {
+            return false;
+        }
+    }
+
+    public static HashMap<Long,Long> getPentagonalCache = new HashMap<>();
+    public static long getPentagonal(long n) {
+        return getPentagonalCache.computeIfAbsent(n, (m) -> (m * (3 * m - 1)) / 2);
+    }
 
     public static boolean isDeficient(long n) {
         return sumOfDivisors(n) < n;
@@ -68,13 +149,27 @@ public class PEUtils {
         });
     }
 
+    static HashMap<BigInteger,BigInteger> factorialsCache = new HashMap<>();
     public static BigInteger factorial(BigInteger n) {
-        BigInteger answer = BigInteger.ONE;
-        while (n.compareTo(BigInteger.ZERO) > 0) {
-            answer = answer.multiply(n);
-            n = n.subtract(BigInteger.ONE);
-        }
-        return answer;
+        return factorialsCache.computeIfAbsent(n, (m) -> {
+            BigInteger answer = BigInteger.ONE;
+            while (m.compareTo(BigInteger.ZERO) > 0) {
+                answer = answer.multiply(m);
+                m = m.subtract(BigInteger.ONE);
+            }
+            return answer;
+        });
+    }
+
+    static HashMap<Long,Long> longFactorialsCache = new HashMap<>();
+    public static long factorial(long n) {
+        return longFactorialsCache.computeIfAbsent(n, (m) -> {
+            long f = 1;
+            for (long i = m; i > 0; i--) {
+                f *= i;
+            }
+            return f;
+        });
     }
 
     public enum Directions {

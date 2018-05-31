@@ -21,20 +21,19 @@ import java.util.stream.Collectors;
 public class Solution030 extends AbstractSolution{
     @Override
     public String run() throws Exception {
-        int power = 4;
+        int power = 5;
         BigDecimal answer = BigDecimal.ZERO;
         for (BigDecimal i = new BigDecimal(power);
-             i.compareTo(new BigDecimal(29524)) <= 0;
+             i.compareTo(new BigDecimal(295245)) <= 0;
              i = i.add(BigDecimal.ONE))
         {
-            System.out.println(i.toString());
-
             BigDecimal val = Arrays.stream(i.toString().split(""))
                     .map((s) -> new BigDecimal(s).pow(power))
                     .reduce(BigDecimal.ZERO, (a,b) -> a.add(b));
 
             if (val.compareTo(i) == 0) {
-                answer.add(i);
+                answer = answer.add(i);
+                System.out.println(i.toString());
             }
         }
 
